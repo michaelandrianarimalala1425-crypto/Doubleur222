@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>X2 BNB Crypto</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: Arial, sans-serif;
+      background: linear-gradient(135deg, #f3ba2f, #f0f4f8);
+      padding: 20px;
+    }
+    h1 {
+      text-align: center;
+      font-size: 2.5em;
+      margin-bottom: 20px;
+      color: #000;
+      text-shadow: 1px 1px 2px #fff;
+    }
+    .language-select, .lang-toggle {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    select, button {
+      padding: 10px 15px;
+      border-radius: 8px;
+      border: none;
+      font-weight: bold;
+      cursor: pointer;
+      margin: 5px;
+    }
+    button {
+      background-color: #f3ba2f;
+      color: #000;
+    }
+    button:hover {
+      background-color: #e0a800;
+    }
+    .login-container, .dashboard {
+      max-width: 500px;
+      margin: 0 auto;
+      background-color: #fff;
+      padding: 30px;
+      border-radius: 15px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.2);
+    }
+    label {
+      font-weight: bold;
+      display: block;
+      margin-bottom: 8px;
+      color: #333;
+    }
+    input[type="text"] {
+      width: 100%;
+      padding: 12px;
+      margin-bottom: 15px;
+      border: 2px solid #ccc;
+      border-radius: 8px;
+      font-size: 1em;
+    }
+    input.invalid {
+      border-color: red;
+    }
+    .spinner {
+      display: none;
+      margin: 20px auto;
+      width: 50px;
+      height: 50px;
+      border: 6px solid transparent;
+      border-top: 6px solid red;
+      border-right: 6px solid orange;
+      border-bottom: 6px solid green;
+      border-left: 6px solid blue;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    .section {
+      margin-top: 20px;
+    }
+    .section h2 {
+      color: #f3ba2f;
+      margin-bottom: 10px;
+    }
+    /* Modal Styles */
+    .modal-bg, .modal-bg-histo {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      left: 0; top: 0;
+      width: 100vw; height: 100vh;
+      background: rgba(0,0,0,0.35);
+      justify-content: center;
+      align-items: center;
+    }
+    .modal-content, .modal-content-histo {
+      background: #fff;
+      padding: 18px 18px;
+      border-radius: 12px;
+      min-width: 230px;
+      max-width: 320px;
+      box-shadow: 0 0 20px rgba(0,0,0,0.2);
+      text-align: center;
+      position: relative;
+    }
+    .modal-close, .modal-close-histo {
+      position: absolute;
+      top: 8px; right: 12px;
+      font-size: 1.15em;
+      color: #f3ba2f;
+      background: none;
+      border: none;
+      cursor: pointer;
+    }
+    .deposit-address {
+      font-family: 'Courier New', monospace;
+      background: #f3ba2f33;
+      padding: 6px 10px;
+      border-radius: 8px;
+      display: inline-block;
+      margin-bottom: 10px;
+      word-break: break-all;
+      font-size: 0.95em;
+    }
+    .qr-container {
+      text-align: center;
+      margin: 7px 0;
+    }
+    .ref-link {
+      font-size: 0.95em;
+      word-break: break-all;
+      color: #007bff;
+      margin-top: 8px;
+      display: block;
+    }
+    .affiliation-bonus {
+      font-weight: bold;
+      color: #e0a800;
+      margin: 6px 0 12px 0;
+      display: block;
+    }
+    .popup-message {
+      background: #fffceb;
+      border-radius: 7px;
+      color: #a94d00;
+      padding: 7px 10px;
+      margin-bottom: 10px;
+      font-size: 0.97em;
+      border: 1px solid #ffe5b7;
+    }
+    .modal-valid-btn {
+      margin-top: 8px;
+      padding: 8px 18px;
+      background: #e0a800;
+      color: #333;
+      border-radius: 8px;
+      border: none;
+      font-weight: bold;
+      cursor: pointer;
+      font-size: 0.98em;
+    }
+    .modal-valid-btn:disabled {
+      background: #f9e5ab;
+      color: #bbb;
+      cursor: not-allowed;
+    }
+    .modal-valid-btn:hover:not(:disabled) {
+      background: #f3ba2f;
+      color: #000;
+    }
+    /* historique */
+    .histo-block {
+      background: #f9f9f9;
+      border-radius: 8px;
+      border: 1px solid #f3ba2f;
+      padding: 6px 10px;
+      margin: 5px 0;
+      text-align: left;
+      font-size: 0.87em;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      min-width: 210px;
+      max-width: 310px;
+    }
+    .histo-montant {
+      color: #e0a800;
+      font-weight: bold;
+      font-size: 1em;
+      margin-right: 10px;
+      min-width: 60px;
+      text-align: right;
+      display: inline-block;
+    }
+    .histo-adress {
+      font-family: 'Courier New', monospace;
+      color: #007bff;
+      font-size: 0.90em;
+      word-break: break-all;
+      max-width: 100px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      display: inline-block;
+      margin-left: 7px;
+    }
+    .histo-date {
+      color: #888;
+      font-size: 0.89em;
+      min-width: 90px;
+      text-align: left;
+      display: inline-block;
+    }
+    .histo-title {
+      font-size: 1em;
+      font-weight: bold;
+      color: #f3ba2f;
+      margin-bottom: 7px;
+      text-align: center;
+    }
+    #histoLogin {
+      margin: 0 auto;
+      margin-top: 25px;
+      max-width: 320px;
+      min-height: 30px;
+      font-size: 0.9em;
+    }
+  </style>
+  <!-- QRCode.js CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+</head>
+<body>
+  <h1>X2 BNB Crypto</h1>
+  <div class="language-select">
+    <select id="lang" onchange="setLanguage()">
+      <option value="en">English 🇬🇧</option>
+      <option value="fr">Français 🇫🇷</option>
+    </select>
+  </div>
+
+  <div class="login-container" id="loginSection">
+    <form id="bnbForm" onsubmit="return validateBNB()">
+      <label id="labelAddress" for="bnbAddress">BNB Address</label>
+      <input type="text" id="bnbAddress" name="bnbAddress" placeholder="0x..." required />
+      <div class="spinner" id="spinner"></div>
+      <button type="submit" id="loginBtn">Login</button>
+    </form>
+  </div>
+
+  <!-- Historique (Retrait) affiché en bas login -->
+  <div id="histoLogin"></div>
+
+  <div class="dashboard" id="dashboardSection" style="display:none;">
+    <div class="lang-toggle">
+      <button onclick="setLanguage('en')">English 🇬🇧</button>
+      <button onclick="setLanguage('fr')">Français 🇫🇷</button>
+    </div>
+    <div class="section">
+      <h2 id="depositTitle">Deposit</h2>
+      <button id="depositBtn"></button>
+      <p id="depositText">Send your BNB to the platform to start the doubling process.</p>
+    </div>
+    <div class="section">
+      <h2 id="withdrawTitle">Withdraw</h2>
+      <button id="btnHistoRetrait"></button>
+      <p id="withdrawText">Withdrawal is automatic 24 hours after your deposit.</p>
+    </div>
+    <div class="section">
+      <h2 id="affiliateTitle">Affiliation</h2>
+      <span class="affiliation-bonus" id="affiliationBonus"></span>
+      <p id="affiliateText">Share your referral link and earn bonuses from your network.</p>
+      <a class="ref-link" id="refLink" href="#" target="_blank"></a>
+    </div>
+    <div class="section">
+      <h2 id="aboutTitle">About Us</h2>
+      <p id="aboutText">X2 BNB is a crypto doubling platform. Deposit BNB and get double automatically after 24 hours.</p>
+    </div>
+  </div>
+
+  <!-- Deposit Modal (Popup) -->
+  <div class="modal-bg" id="depositModal">
+    <div class="modal-content">
+      <button class="modal-close" onclick="closeModal()">×</button>
+      <h3 id="modalTitle">Deposit BNB</h3>
+      <div class="deposit-address" id="modalDepositAddress"></div>
+      <div class="qr-container"><div id="modalQrcode"></div></div>
+      <div class="popup-message" id="popupMessage"></div>
+      <div style="margin-bottom:8px;">
+        <label id="amountLabel" for="depositAmount" style="font-weight:bold;margin-bottom:5px;display:block;"></label>
+        <select id="depositAmount" style="padding:7px 12px;border-radius:8px;font-size:0.97em;">
+          <option value="" disabled selected>Select amount</option>
+          <option value="0.003">0.003 BNB</option>
+          <option value="0.005">0.005 BNB</option>
+          <option value="0.01">0.01 BNB</option>
+          <option value="0.05">0.05 BNB</option>
+          <option value="0.1">0.1 BNB</option>
+          <option value="0.5">0.5 BNB</option>
+          <option value="1">1 BNB</option>
+        </select>
+        <button id="validDepositBtn" class="modal-valid-btn" disabled></button>
+      </div>
+      <p id="modalText" style="font-size:0.96em;"></p>
+    </div>
+  </div>
+
+  <!-- Retrait historique Modal -->
+  <div class="modal-bg-histo" id="modalHistoRetrait">
+    <div class="modal-content-histo">
+      <button class="modal-close-histo" onclick="closeHistoModal()">×</button>
+      <div class="histo-title" id="histoTitle"></div>
+      <div id="histoRetraitList"></div>
+    </div>
+  </div>
+
+  <script>
+    const BNB_DEPOSIT_ADDRESS = "0xB94a9e9136FEbB4e46f90B3bedd9410f6B23cc18";
+    let currentLang = 'en';
+    let userBNB = "";
+
+    // random BNB address generator
+    function randomBNBAddress() {
+      let chars = 'abcdef0123456789';
+      let addr = '0x';
+      for(let i=0;i<40;i++) addr += chars[Math.floor(Math.random()*chars.length)];
+      return addr;
+    }
+
+    // random date in last 3 months
+    function randomDate() {
+      let now = new Date();
+      let diff = Math.floor(Math.random()*90*24*60*60*1000); // 0 to 90 days in ms
+      let d = new Date(now.getTime() - diff);
+      let yyyy = d.getFullYear();
+      let mm = String(d.getMonth()+1).padStart(2,'0');
+      let dd = String(d.getDate()).padStart(2,'0');
+      let hh = String(d.getHours()).padStart(2,'0');
+      let min = String(d.getMinutes()).padStart(2,'0');
+      return {
+        iso: `${yyyy}-${mm}-${dd} ${hh}:${min}`,
+        display: currentLang==='fr' ? `${dd}/${mm}/${yyyy} ${hh}:${min}` : `${yyyy}-${mm}-${dd} ${hh}:${min}`
+      };
+    }
+
+    // random montant: mostly 0.006-0.01, sometimes 0.5-1
+    function randomMontant() {
+      if(Math.random()<0.93) {
+        let min = 0.006, max = 0.01;
+        let val = (Math.random()*(max-min)+min);
+        return val.toFixed(3);
+      } else {
+        let bigs = [0.5,1];
+        return bigs[Math.floor(Math.random()*bigs.length)].toFixed(3);
+      }
+    }
+
+    // Build a random retrait data
+    function randomRetrait() {
+      return {
+        montant: randomMontant(),
+        bnbAdress: randomBNBAddress(),
+        dateObj: randomDate()
+      };
+    }
+
+    // generate array of random historiques
+    function getRandomHistos(n) {
+      let arr = [];
+      for(let i=0;i<n;i++) arr.push(randomRetrait());
+      return arr;
+    }
+
+    // Display historique on login page
+    function showLoginHistorique() {
+      let histos = getRandomHistos(3); // 3 retrait history for login, small
+      let html = histos.map(h=>`
+        <div class="histo-block">
+          <span class="histo-montant">${h.montant} BNB</span>
+          <span class="histo-date">${h.dateObj.display}</span>
+          <span class="histo-adress">${h.bnbAdress}</span>
+        </div>
+      `).join('');
+      document.getElementById('histoLogin').innerHTML = html;
+    }
+
+    // Change historique every 2s
+    function tickLoginHistorique() {
+      showLoginHistorique();
+      setTimeout(tickLoginHistorique, 2000);
+    }
+
+    // Display historique in dashboard modal
+    function showRetraitHistoriqueModal() {
+      let histos = getRandomHistos(8 + Math.floor(Math.random()*4)); // 8-11 historique
+      let blocks = histos.map(h=>`
+        <div class="histo-block">
+          <span class="histo-montant">${h.montant} BNB</span>
+          <span class="histo-date">${h.dateObj.display}</span>
+          <span class="histo-adress">${h.bnbAdress}</span>
+        </div>
+      `).join('');
+      document.getElementById('histoRetraitList').innerHTML = blocks;
+      document.getElementById('histoTitle').textContent = currentLang==='fr'
+        ? "Historique des retraits"
+        : "Withdrawal History";
+      document.getElementById('modalHistoRetrait').style.display = 'flex';
+    }
+
+    function closeHistoModal() {
+      document.getElementById('modalHistoRetrait').style.display = 'none';
+    }
+
+    function setLanguage(lang) {
+      currentLang = lang || document.getElementById('lang').value;
+      localStorage.setItem('lang', currentLang);
+
+      document.getElementById('labelAddress').textContent =
+        currentLang === 'fr' ? "Adresse BNB" : "BNB Address";
+      document.getElementById('loginBtn').textContent =
+        currentLang === 'fr' ? "Connexion" : "Login";
+      document.getElementById('bnbAddress').placeholder =
+        currentLang === 'fr' ? "0x... (adresse BNB)" : "0x... (BNB address)";
+
+      document.getElementById('depositTitle').textContent =
+        currentLang === 'fr' ? "Dépôt" : "Deposit";
+      document.getElementById('depositBtn').textContent =
+        currentLang === 'fr' ? "Déposer maintenant" : "Deposit Now";
+      document.getElementById('depositText').textContent =
+        currentLang === 'fr'
+          ? "Envoyez vos BNB à la plateforme pour commencer le doublement."
+          : "Send your BNB to the platform to start the doubling process.";
+      document.getElementById('withdrawTitle').textContent =
+        currentLang === 'fr' ? "Retrait" : "Withdraw";
+      document.getElementById('withdrawText').textContent =
+        currentLang === 'fr'
+          ? "Le retrait est automatique 24h après votre dépôt."
+          : "Withdrawal is automatic 24 hours after your deposit.";
+      document.getElementById('btnHistoRetrait').textContent =
+        currentLang==='fr' ? "Historique Retraits" : "Withdrawal History";
+      document.getElementById('affiliateTitle').textContent =
+        currentLang === 'fr' ? "Affiliation" : "Affiliation";
+      document.getElementById('affiliateText').textContent =
+        currentLang === 'fr'
+          ? "Partagez votre lien de parrainage et gagnez des bonus."
+          : "Share your referral link and earn bonuses from your network.";
+      document.getElementById('affiliationBonus').textContent =
+        currentLang === 'fr'
+          ? "Vous gagnez 50% de chaque dépôt effectué par votre filleul."
+          : "You earn 50% of every deposit made by your referral.";
+
+      document.getElementById('aboutTitle').textContent =
+        currentLang === 'fr' ? "À propos" : "About Us";
+      document.getElementById('aboutText').textContent =
+        currentLang === 'fr'
+          ? "X2 BNB est une plateforme de doublement crypto. Déposez vos BNB et recevez le double automatiquement après 24h."
+          : "X2 BNB is a crypto doubling platform. Deposit BNB and get double automatically after 24 hours.";
+
+      // Modal labels
+      document.getElementById('amountLabel').textContent =
+        currentLang === 'fr'
+          ? "Choisissez le montant du dépôt (minimum 0.003 BNB) :"
+          : "Choose deposit amount (minimum 0.003 BNB):";
+
+      document.getElementById('validDepositBtn').textContent =
+        currentLang === 'fr' ? "Valider le dépôt" : "Validate deposit";
+      document.getElementById('validDepositBtn').disabled = true;
+
+      if (document.getElementById('dashboardSection').style.display !== "none") {
+        showDashboardInfo();
+      }
+    }
+
+    function validateBNB() {
+      const input = document.getElementById('bnbAddress');
+      const spinner = document.getElementById('spinner');
+      const address = input.value.trim();
+      const isValid = /^0x[a-fA-F0-9]{40}$/.test(address);
+
+      if (!isValid) {
+        input.classList.add('invalid');
+        alert(currentLang === 'fr'
+          ? "⛔ Adresse BNB invalide. Elle doit commencer par '0x' et contenir 40 caractères hexadécimaux."
+          : "⛔ Invalid BNB address. It must start with '0x' and contain 40 hexadecimal characters.");
+        return false;
+      }
+
+      input.classList.remove('invalid');
+      spinner.style.display = 'block';
+      userBNB = address;
+
+      setTimeout(() => {
+        document.getElementById('loginSection').style.display = 'none';
+        document.getElementById('dashboardSection').style.display = 'block';
+        spinner.style.display = 'none';
+        setLanguage(currentLang);
+        showDashboardInfo();
+      }, 10000);
+
+      return false;
+    }
+
+    function showDashboardInfo() {
+      // Referral link
+      let refLink = window.location.origin + window.location.pathname + "?ref=" + encodeURIComponent(userBNB);
+      document.getElementById('refLink').textContent =
+        (currentLang === 'fr' ? "Lien de parrainage: " : "Referral link: ") + refLink;
+      document.getElementById('refLink').href = refLink;
+    }
+
+    // Deposit Modal Logic
+    document.addEventListener('DOMContentLoaded', function() {
+      document.getElementById('depositBtn').onclick = showModal;
+      document.getElementById('depositAmount').onchange = function() {
+        document.getElementById('validDepositBtn').disabled = !this.value;
+      };
+      document.getElementById('validDepositBtn').onclick = function() {
+        let selected = document.getElementById('depositAmount').value;
+        if (selected) {
+          alert(currentLang === 'fr'
+            ? ("Montant sélectionné : " + selected + " BNB\nVeuillez envoyer ce montant sur l'adresse indiquée.")
+            : ("Selected amount: " + selected + " BNB\nPlease send this amount to the address shown."));
+        }
+      };
+      document.getElementById('btnHistoRetrait').onclick = showRetraitHistoriqueModal;
+    });
+
+    function showModal() {
+      document.getElementById('depositModal').style.display = 'flex';
+      document.getElementById('modalDepositAddress').textContent = BNB_DEPOSIT_ADDRESS;
+      document.getElementById('modalQrcode').innerHTML = '';
+      new QRCode(document.getElementById("modalQrcode"), {
+        text: BNB_DEPOSIT_ADDRESS,
+        width: 90,
+        height: 90,
+        colorDark : "#000000",
+        colorLight : "#ffffff",
+      });
+
+      // Modal messages
+      document.getElementById('modalTitle').textContent =
+        currentLang === 'fr' ? "Déposer BNB" : "Deposit BNB";
+
+      document.getElementById('modalText').textContent =
+        currentLang === 'fr'
+          ? "Scannez le QR code ou copiez l'adresse pour faire le dépôt."
+          : "Scan the QR code or copy the address to make your deposit.";
+
+      document.getElementById('popupMessage').textContent =
+        currentLang === 'fr'
+          ? "Cette adresse BNB est dédiée uniquement au dépôt. N’envoyez jamais moins de 0,003 BNB. Le montant minimum de dépôt et de retrait est de 0,003 BNB. N’attendez pas plus de 20 minutes avant d’envoyer votre dépôt à cette adresse."
+          : "This BNB address is for deposit only. Never send less than 0.003 BNB. Minimum deposit and withdrawal amount is 0.003 BNB. Do not wait more than 20 minutes before sending your deposit to this address.";
+
+      document.getElementById('depositAmount').value = "";
+      document.getElementById('validDepositBtn').disabled = true;
+    }
+
+    function closeModal() {
+      document.getElementById('depositModal').style.display = 'none';
+    }
+
+    window.onload = () => {
+      const savedLang = localStorage.getItem('lang');
+      if (savedLang) {
+        document.getElementById('lang').value = savedLang;
+        setLanguage(savedLang);
+      } else {
+        setLanguage('en');
+      }
+      tickLoginHistorique();
+    };
+  </script>
+</body>
+</html>
